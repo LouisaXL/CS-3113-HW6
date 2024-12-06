@@ -127,14 +127,12 @@ void LevelA::initialise()
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 0.8f, 0.8f, ENEMY, GUARD, IDLE);
+        m_game_state.enemies[i] = Entity(enemy_texture_id, 3.0f, 0.8f, 0.8f, ENEMY, GUARD, IDLE);
     }
-
 
     m_game_state.enemies[0].set_position(glm::vec3(7.0f, -5.0f, 0.0f));
     m_game_state.enemies[0].set_movement(glm::vec3(0.0f));
-    //m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-    //m_game_state.enemies[0].set_scale(glm::vec3(2.0f, 2.0f, 0.0f));
+
 
         // ––––– AUDIO SETUP ––––– //
    // Start Audio
@@ -149,8 +147,6 @@ void LevelA::initialise()
     Mix_Music* g_music = Mix_LoadMUS("assets/bgm.mp3");
 
     // This will schedule the music object to begin mixing for playback.
-// The first parameter is the pointer to the mp3 we loaded
-// and second parameter is the number of times to loop.
     Mix_PlayMusic(g_music, -1);
 
     // Set the music to half volume
@@ -186,12 +182,6 @@ void LevelA::update(float delta_time)
         m_game_state.player->deactivate();
     }
 
-    // check bubble collision
-    //m_game_state.bubble->check_bubble_enemy_hits(m_game_state.enemies, ENEMY_COUNT);
-    //m_game_state.bubble->check_bubble_map_hits(m_game_state.map);
-
-
-
     //if (m_game_state.bubble->get_bubble_collision() == true || m_game_state.bubble->get_is_active() == false) {
     //    // hit smt
     //    m_game_state.bubble->deactivate();                  // disappear and restart
@@ -208,8 +198,6 @@ void LevelA::update(float delta_time)
         else if (m_game_state.player->get_bubble_direction() == 2) m_game_state.bubble->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));      // bubble move right
         else if (m_game_state.player->get_bubble_direction() == 3) m_game_state.bubble->set_movement(glm::vec3(0.0f, -1.0f, 0.0f));     // bubble move down
         else if (m_game_state.player->get_bubble_direction() == 4) m_game_state.bubble->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));     // bubble move left
-
-
     }        
     
     if (m_game_state.bubble->get_bubble_collision() == true) {
@@ -221,13 +209,9 @@ void LevelA::update(float delta_time)
         m_game_state.hook->set_movement(-m_game_state.hook->get_movement());
     }
 
-    // CHANGE TO NEXT SCENE 
-    if (m_game_state.enemies[0].get_is_active() == false && ENEMY_COUNT != 0) {
-        // if eliminate all enimies
-        m_game_state.next_scene_id = 2; 
-        //m_game_state.player->set_position(glm::vec3(5.0f, 2.0f, 0.0f)); // reset position
+    if ((m_game_state.player->check_collision(m_game_state.hook)) && (m_game_state.enemies[0].get_is_active() == false || m_game_state.easy_mode == true)) {
+        m_game_state.next_scene_id = 2;
     }
-    if (m_game_state.player->check_collision(m_game_state.hook)) m_game_state.next_scene_id = 2;
 }
 
 
@@ -236,7 +220,11 @@ void LevelA::render(ShaderProgram* g_shader_program)
     GLuint g_font_texture_id = Utility::load_texture(WORD_FILEPATH);
     m_game_state.map->render(g_shader_program);
     m_game_state.player->render(g_shader_program);
-    m_game_state.hook->render(g_shader_program);
+
+    if (m_game_state.enemies[0].get_is_active() == false || m_game_state.easy_mode == true) {
+        m_game_state.hook->render(g_shader_program);
+    }
+    
     for (int i = 0; i < 1; i++)
         m_game_state.enemies[i].render(g_shader_program);
 

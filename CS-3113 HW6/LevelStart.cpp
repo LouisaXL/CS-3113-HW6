@@ -96,14 +96,22 @@ void LevelStart::render(ShaderProgram* g_shader_program)
 {
     GLuint g_font_texture_id = Utility::load_texture(WORD_FILEPATH);
 
-    Utility::draw_text(g_shader_program, g_font_texture_id, "Arrow to walk, Space to jump; ", 0.3f, 0.02f,
-        glm::vec3(0.5f, 2.0f, 0.0f));
+    Utility::draw_text(g_shader_program, g_font_texture_id, "Arrows to move; ", 0.3f, 0.005f,
+        glm::vec3(1.0f, 2.5f, 0.0f));
+    Utility::draw_text(g_shader_program, g_font_texture_id, "WASD to shoot; ", 0.3f, 0.005f,
+        glm::vec3(1.0f, 2.1f, 0.0f));
 
-    Utility::draw_text(g_shader_program, g_font_texture_id, "Kill the enemies to move on;", 0.3f, 0.02f,
-        glm::vec3(1.0f, 0.0f, 0.0f));
+    Utility::draw_text(g_shader_program, g_font_texture_id, "fish", 0.8f, 0.005f,
+        glm::vec3(1.8f, 0.0f, 0.0f));
+
+    Utility::draw_text(g_shader_program, g_font_texture_id, "Kill enemies & bite the hook;", 0.3f, 0.005f,
+        glm::vec3(-1.2f, -1.5f, 0.0f));
+
+    Utility::draw_text(g_shader_program, g_font_texture_id, "(press e for 'easy mode' :) )", 0.2f, 0.005f,
+        glm::vec3(0.0f, -2.7f, 0.0f));
 
     Utility::draw_text(g_shader_program, g_font_texture_id, "ENTER TO BEGIN", 0.4f, 0.02f,
-        glm::vec3(2.0f, -2.5f, 0.0f));
+        glm::vec3(0.5f, -2.3f, 0.0f));
 
 
 }

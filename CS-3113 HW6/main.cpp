@@ -1,7 +1,7 @@
 /**
 * Author: Louisa Liu
-* Assignment: Platformer
-* Date due: 2023-11-29, 11:59pm
+* Assignment: fish
+* Date due: 12/6/2024, 2:00pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
 * NYU School of Engineering Policies and Procedures on
@@ -11,21 +11,34 @@
 
 /*
 FOR GRADER:
-There is a bug where when you are killed by enemy, the enemy is registered as killed and the player descend from spawn unable to move.
-If you still see this message tho that means it is not fixed.
+
+Menu Screen: 
+            it's there, just look
+
+2 Minute Gameplay: 
+            I don't want to make the game unbeatable, but I can turn up the enemy speed and add in more enemy... 
+            that being said, half of the gameplay time prob comes from glitching into the wall tho
+
+Moving AI:
+            1. Crabs that chases you
+            2. Hook that moves horizontally (and e for easy mode)
+            3. Map (Level C) that alternates
+
+Players can Win and Lose:
+            Try dying, a tune will play
+            Or try winning
+
+Shader Logic:
+            Was gonna have it in Level B, for cave vibe
+            Nah didn't work.
+            
+Audio:
+            IDK is ur computer audio on?
 
 */
 
 
-/*
-NOTE FOR SELF:
-- add in boat as gate to next level
-- add in attack animation and choice to attack enemies
-- add in backgrounds
-- add in variety of platform
 
-^ will see if I end up doing any of those tho lol
-*/
 
 #define GL_SILENCE_DEPRECATION
 //#define STB_IMAGE_IMPLEMENTATION
@@ -100,13 +113,6 @@ constexpr GLint TEXTURE_BORDER = 0;
 constexpr int CD_QUAL_FREQ = 44100,  // CD quality
 AUDIO_CHAN_AMT = 2,      // Stereo
 AUDIO_BUFF_SIZE = 4096;
-//
-//// SFX
-//constexpr int PLAY_ONCE = 0,
-//NEXT_CHNL = -1,  // next available channel
-//MUTE_VOL = 0,
-//MILS_IN_SEC = 1000,
-//ALL_SFX_CHN = -1;
 
 int sound_times_played = 0;
 
@@ -129,10 +135,6 @@ glm::mat4 g_view_matrix, g_projection_matrix;
 float g_previous_ticks = 0.0f;
 float g_accumulator = 0.0f;
 
-//bool is_hit = false;
-//constexpr float PLATFORM_OFFSET = 5.0f;
-//
-//constexpr int FONTBANK_SIZE = 16;
 
 
 // Audio
@@ -257,14 +259,7 @@ void process_input()
                 g_app_status = TERMINATED;
                 break;
 
-            //case SDLK_SPACE:
-            //    // Jump
-            //    if (g_current_scene->get_state().player->get_collided_bottom())
-            //    {
-            //        g_current_scene->get_state().player->jump();
-            //        Mix_PlayChannel(-1, g_current_scene->get_state().jump_sfx, 0);
-            //    }
-            //    break;
+
 
             case SDLK_w:
                 g_current_scene->get_state().player->shoot_up();
@@ -286,10 +281,8 @@ void process_input()
                 Mix_PlayChannel(-1, g_current_scene->get_state().shoot_sfx, 0);
                 break;
 
-            //case SDLK_m:
-            //    // Mute volume
-            //    Mix_HaltMusic();
-            //    break;
+            case SDLK_e:
+                g_current_scene->toggle_easy_mode();    // easy mode on
 
             case SDLK_RETURN:
                 if (g_current_scene == g_levels[0]) {
@@ -335,9 +328,6 @@ void update()
         return;
     }
 
-
-
-
     while (delta_time >= FIXED_TIMESTEP) {
         // ————— UPDATING THE SCENE (i.e. map, character, enemies...) ————— //
         g_current_scene->update(FIXED_TIMESTEP);
@@ -348,46 +338,13 @@ void update()
     g_accumulator = delta_time;
 
 
-
-    // Enemy die when fall
-    //for (int i = 0; i < ENEMY_COUNT; i++) {
-    //    if (g_game_state.enemies[i].get_position().y <= -5.0) {
-    //        g_game_state.player->inc_enemy_slay();
-    //        g_game_state.enemies[i].deactivate();
-    //    }
-    //}
-
-
-
     // ————— PLAYER CAMERA ————— //
-//     // Prevent the camera from showing anything outside of the "edge" of the level
+
     g_view_matrix = glm::mat4(1.0f);
 
-    //if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
     g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->get_state().player->get_position().x, -g_current_scene->get_state().player->get_position().y, 0));
-    //}
-    ////else {
-    //    g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 1.0, 0));
-    //}
-
-   
     
-
-    //if (g_current_scene == g_level_a && g_current_scene->get_state().player->get_enemy_hit() == true) {
-    //    switch_to_scene(g_level_b);
-    //    g_current_scene->get_state().player->set_enemy_hit_false();
-    //}
-    
-
-    //g_view_matrix = glm::mat4(1.0f);
-
-    //if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
-    //    g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->get_state().player->get_position().x, 1.0, 0));
-    //}
-    //else {
-    //    g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 1.0, 0));
-    //}
-
+    g_shader_program.set_light_position_matrix(g_current_scene->get_state().player->get_position());
 }
 
 void render()
@@ -398,12 +355,6 @@ void render()
 
     // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
     g_current_scene->render(&g_shader_program);
-
-    //for (int i = 0; i < ENEMY_COUNT; i++) {
-    //    g_game_state.enemies[i].render(&g_shader_program);
-    //}
-
-
 
 
     SDL_GL_SwapWindow(g_display_window);
@@ -416,7 +367,8 @@ void shutdown()
     // ————— DELETING LEVEL DATA (i.e. map, character, enemies...) ————— //
     delete g_level_start;
     delete g_level_a;
-    //delete g_level_b;
+    delete g_level_b;
+    delete g_level_c;
 }
 
 // ––––– GAME LOOP ––––– //

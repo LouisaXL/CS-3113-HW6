@@ -20,14 +20,6 @@ constexpr int CD_QUAL_FREQ = 44100,  // CD quality
 AUDIO_CHAN_AMT = 2,      // Stereo
 AUDIO_BUFF_SIZE = 4096;
 
-//constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
-//PLATFORM_FILEPATH[] = "assets/platformPack_tile027.png",
-//ENEMY_FILEPATH[] = "assets/soph.png";
-
-//constexpr char BGM_FILEPATH[] = "assets/bgm.mp3",
-//                JUMP_SFX_FILEPATH[] = "assets/jump.mp3";
-// constexpr int  LOOP_FOREVER = -1;  // -1 means loop forever in Mix_PlayMusic; 0 means play once and loop zero times
-
 int count_down = 100;
 int curr_map = 1;
 
@@ -131,7 +123,7 @@ void LevelC::initialise()
         PLAYER
     );
 
-    m_game_state.player->set_position(glm::vec3(5.0f, -5.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(5.0f, -8.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(5.0f);
@@ -164,7 +156,7 @@ void LevelC::initialise()
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_texture_id, 0.7f, 0.8f, 0.8f, ENEMY, GUARD, IDLE);
+        m_game_state.enemies[i] = Entity(enemy_texture_id, 2.0f, 0.8f, 0.8f, ENEMY, GUARD, IDLE);
     }
 
 
@@ -186,8 +178,6 @@ void LevelC::initialise()
     Mix_Music* g_music = Mix_LoadMUS("assets/bgm.mp3");
 
     // This will schedule the music object to begin mixing for playback.
-// The first parameter is the pointer to the mp3 we loaded
-// and second parameter is the number of times to loop.
     Mix_PlayMusic(g_music, -1);
 
     // Set the music to half volume
@@ -223,12 +213,6 @@ void LevelC::update(float delta_time)
         m_game_state.player->deactivate();
     }
 
-    // check bubble collision
-    //m_game_state.bubble->check_bubble_enemy_hits(m_game_state.enemies, ENEMY_COUNT);
-    //m_game_state.bubble->check_bubble_map_hits(m_game_state.map);
-
-
-
     //if (m_game_state.bubble->get_bubble_collision() == true || m_game_state.bubble->get_is_active() == false) {
     //    // hit smt
     //    m_game_state.bubble->deactivate();                  // disappear and restart
@@ -245,7 +229,6 @@ void LevelC::update(float delta_time)
         else if (m_game_state.player->get_bubble_direction() == 2) m_game_state.bubble->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));      // bubble move right
         else if (m_game_state.player->get_bubble_direction() == 3) m_game_state.bubble->set_movement(glm::vec3(0.0f, -1.0f, 0.0f));     // bubble move down
         else if (m_game_state.player->get_bubble_direction() == 4) m_game_state.bubble->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));     // bubble move left
-
 
     }
 
@@ -296,11 +279,13 @@ void LevelC::render(ShaderProgram* g_shader_program)
         Utility::draw_text(g_shader_program, g_font_texture_id, "WASTED", 0.5f, 0.05f,
             m_game_state.player->get_position());
     }
-    // TODO: ADD THE BELOW TO THE LAST LEVEL
-    // 
-    if ((m_game_state.enemies->get_is_active() == false && ENEMY_COUNT != 0) || m_game_state.player->check_collision(m_game_state.hook)) {
+
+    if ( m_game_state.player->check_collision(m_game_state.hook)) {
         Utility::draw_text(g_shader_program, g_font_texture_id, "WIN?", 0.5f, 0.05f,
             glm::vec3(5.0f, 1.0f, 0.0f));
-        //Mix_PlayChannel(-1, m_game_state.dies_sfx, 0);
+    }
+    if (m_game_state.enemies->get_is_active() == false && ENEMY_COUNT != 0) {
+        Utility::draw_text(g_shader_program, g_font_texture_id, "TO BE CONTINUE", 0.5f, 0.05f,
+            m_game_state.enemies[0].get_position());
     }
 }

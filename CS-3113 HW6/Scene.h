@@ -38,6 +38,7 @@ struct GameState
 
     // ————— POINTERS TO OTHER SCENES ————— //
     int next_scene_id;
+    bool easy_mode = false;
 };
 
 
@@ -65,6 +66,10 @@ public:
 
     void set_scene_id(int amt) {
         m_game_state.next_scene_id = amt;
+    }
+
+    void const toggle_easy_mode() {
+        m_game_state.easy_mode = true;
     }
 
     // ————— GETTERS ————— //

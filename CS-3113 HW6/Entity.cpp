@@ -135,7 +135,7 @@ void Entity::ai_guard(Entity* player)
     switch (m_ai_state) {
     case IDLE:
         //if (m_is_ai_jumpwalk) ai_jump();
-        if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = WALKING;
+        if (glm::distance(m_position, player->get_position()) < 5.0f) m_ai_state = WALKING;
         break;
 
     case WALKING:
@@ -208,7 +208,6 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
             {
                 if (collidable_entity->m_entity_type == ENEMY && m_entity_type == PLAYER) {
                     enemies_hit = true;
-                    //amt_slay++; // TODO: dont need amt_slay
                     this->deactivate();
                     continue;
                 }
@@ -334,7 +333,6 @@ void const Entity::check_enemy_hit(Entity* collidable_entities, int collidable_e
 }
 
 void const Entity::check_bubble_enemy_hits(Entity* collidable_entities, int collidable_entity_count) {
-    // m_collided_bubble_enemy = false;
     bubble_collision = false;
     check_collision_x(collidable_entities, collidable_entity_count);
     check_collision_y(collidable_entities, collidable_entity_count);
@@ -456,9 +454,7 @@ void const Entity::check_collision_x(Map* map)
     if (map->is_solid(left, &penetration_x, &penetration_y) && m_velocity.x < 0)
     {        
         if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
-        //if (m_entity_type == PLAYER) this->deactivate();
         m_position.x += penetration_x;
-        //m_position.x = 5.0f;
         m_velocity.x = 0;
         m_collided_left = true;
         
@@ -484,12 +480,6 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_collided_bottom = false;
     m_collided_left = false;
     m_collided_right = false;
-
-    //for (int i = 0; i < collidable_entity_count; i++)
-    //{
-    //    if (check_collision(&collidable_entities[i])) return;
-    //}
-    // DELETE BECAUSE NOW HAVE MAP
 
     if (m_entity_type == ENEMY) ai_activate(player);
 
@@ -522,39 +512,13 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_velocity.x = m_movement.x * m_speed;
     m_velocity.y = m_movement.y * m_speed;
 
-    // And we add the gravity next
-    //if (m_enemy_type == DROPS) {
-    //    m_velocity += m_acceleration * delta_time;
-    //}
-    
-
     m_position.y += m_velocity.y * delta_time;
     check_collision_y(collidable_entities, collidable_entity_count);
-    // if (m_is_jumper && m_collided_bottom) { m_is_jumping = true; }
     check_collision_y(map);
 
     m_position.x += m_velocity.x * delta_time;
     check_collision_x(collidable_entities, collidable_entity_count);
     check_collision_x(map);
-
-    //if (m_entity_type == PLAYER) {
-    //    check_player_hit(collidable_entities, collidable_entity_count);
-    //    check_enemy_hit(collidable_entities, collidable_entity_count);
-    //}
-
-
-    //if (m_is_jumping)
-    //{
-    //    m_is_jumping = false;
-    //    m_velocity.y += m_jumping_power;
-    //}
-
-    //if (m_entity_type == PLAYER && m_position.y <= -5.0) {
-    //    this->deactivate();
-    //}     // put inside levelA
-
-
-
 
     m_model_matrix = glm::mat4(1.0f);
     m_model_matrix = glm::translate(m_model_matrix, m_position);

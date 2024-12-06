@@ -25,6 +25,7 @@ private:
     GLuint m_model_matrix_uniform;
     GLuint m_view_matrix_uniform;
     GLuint m_colour_uniform;
+    GLuint m_light_position_uniform;
 
     GLuint m_position_attribute;
     GLuint m_tex_coord_attribute;
@@ -36,6 +37,7 @@ public:
 
     void load(const char *vertex_shader_file, const char *fragment_shader_file);
 
+    void set_light_position_matrix(const glm::vec3 position);
     void set_model_matrix(const glm::mat4 &matrix);
     void set_projection_matrix(const glm::mat4 &matrix);
     void set_view_matrix(const glm::mat4 &matrix);

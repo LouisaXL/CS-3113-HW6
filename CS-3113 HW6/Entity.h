@@ -73,16 +73,11 @@ private:
     bool m_collided_enemy_left = false;
     bool m_collided_enemy_right = false;
 
-    //int player_count = 1;
     int m_lives = 3;    // DELETE
 
 
-    // bool bubble_available = true;
     int bubble_direction = 0;      // up, right, down, left = 1,2,3,4
     bool bubble_collision = false;
-
-    //bool m_collided_bubble_enemy = false;
-    //bool m_collided_bubble_map = false;
 
 
 public:
@@ -199,7 +194,6 @@ public:
     void const set_enemy_hit_false() { enemies_hit = false; }
     void const set_enemy_hit_true() { enemies_hit = true; }
 
-    //bool get_hit() { return is_hit; };
     void const check_player_hit(Entity* collidable_entities, int collidable_entity_count);
     void const check_enemy_hit(Entity* collidable_entities, int collidable_entity_count);
 
