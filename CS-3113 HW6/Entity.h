@@ -35,11 +35,15 @@ private:
     float     m_speed,
         m_jumping_power;
 
+    // TODO: DELETE BELOW
+
     bool m_is_jumping;
     bool m_is_jumper;
 
+    // TODO: DELETE BELOW
     bool is_hit = false;
     bool enemies_hit = false;
+
 
     // ————— TEXTURES ————— //
     GLuint    m_texture_id;
@@ -71,8 +75,15 @@ private:
 
     //int player_count = 1;
     int m_lives = 3;    // DELETE
+
+
     // bool bubble_available = true;
     int bubble_direction = 0;      // up, right, down, left = 1,2,3,4
+    bool bubble_collision = false;
+
+    //bool m_collided_bubble_enemy = false;
+    //bool m_collided_bubble_map = false;
+
 
 public:
     // ————— STATIC VARIABLES ————— //
@@ -124,9 +135,11 @@ public:
     void shoot_up() { bubble_direction = 1; face_up(); }
     void shoot_down() { bubble_direction = 3; face_down(); }
 
-    int get_bubble_direction() { return bubble_direction; }
-    void const bubble_reset() { bubble_direction = 0; }
-    
+    int get_bubble_direction() { return bubble_direction; }             // follow player
+    void const reset_bubble_direction() { bubble_direction = 0; }       // follow player
+    bool const get_bubble_collision() { return bubble_collision; }      // follow bubble
+    void const reset_bubble_collision() { bubble_collision == false; }  // follow bubble
+
     void const jump() { m_is_jumping = true; }
 
     // ————— GETTERS ————— //
@@ -154,6 +167,8 @@ public:
     int const get_lives() { return m_lives; }
     bool const get_is_hit() { return is_hit; }
     bool const get_enemy_hit() { return enemies_hit; }
+
+
 
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
@@ -187,6 +202,9 @@ public:
     //bool get_hit() { return is_hit; };
     void const check_player_hit(Entity* collidable_entities, int collidable_entity_count);
     void const check_enemy_hit(Entity* collidable_entities, int collidable_entity_count);
+
+    void const check_bubble_enemy_hits(Entity* collidable_entities, int collidable_entity_count);
+    void const check_bubble_map_hits(Map* map);
 
     int get_enemy_slay() { return amt_slay; };
     void const inc_enemy_slay() { amt_slay++; };

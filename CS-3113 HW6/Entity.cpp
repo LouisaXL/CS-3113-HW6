@@ -135,7 +135,7 @@ void Entity::ai_guard(Entity* player)
     switch (m_ai_state) {
     case IDLE:
         //if (m_is_ai_jumpwalk) ai_jump();
-        if (glm::distance(m_position, player->get_position()) < 5.0f) m_ai_state = WALKING;
+        if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = WALKING;
         break;
 
     case WALKING:
@@ -212,6 +212,12 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
                     this->deactivate();
                     continue;
                 }
+                if (collidable_entity->m_entity_type == ENEMY && m_entity_type == BUBBLE) {
+                    // if bubble hit enemy, enemy disappear
+                    collidable_entity->deactivate();
+                    bubble_collision == true;           // set bubble collision to true
+                    continue;
+                }
 
                 m_position.y -= y_overlap;
                 m_velocity.y = 0;
@@ -224,8 +230,13 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
             {
                 if (collidable_entity->m_entity_type == ENEMY && m_entity_type == PLAYER) {
                     enemies_hit = true;
-                    //amt_slay++; // TODO: dont need amt_slay
                     this->deactivate();
+                    continue;
+                }
+                if (collidable_entity->m_entity_type == ENEMY && m_entity_type == BUBBLE) {
+                    enemies_hit == true;
+                    collidable_entity->deactivate();    // enemy deactivate
+                    bubble_collision == true;           // set bubble collision to true
                     continue;
                 }
 
@@ -248,7 +259,7 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
 
         if (check_collision(collidable_entity))
         {
-            if (collidable_entity->m_entity_type == ENEMY && m_entity_type == PLAYER) {
+            if (collidable_entity->m_entity_type == ENEMY && (m_entity_type == PLAYER || m_entity_type == BUBBLE)) {
 
                 float x_distance = fabs(m_position.x - collidable_entity->m_position.x);
                 float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->m_width / 2.0f));
@@ -257,12 +268,16 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
                 {
                     if (collidable_entity->m_entity_type == ENEMY && m_entity_type == PLAYER) {
                         m_collided_enemy_right = true;
-                        //is_hit = true;
-                        //this->deactivate();
-                        //if (this->get_lives() == 0) {
-                        //    this->deactivate();
-                        //}
+                        this->deactivate();
+                        continue;
                     }
+                    if (collidable_entity->m_entity_type == ENEMY && m_entity_type == BUBBLE) {
+                        enemies_hit == true;
+                        collidable_entity->deactivate();    // enemy deactivate
+                        bubble_collision == true;           // set bubble collision to true
+                        continue;
+                    }
+
                     m_position.x -= x_overlap;
                     m_velocity.x = 0;
 
@@ -274,11 +289,14 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
                 {
                     if (collidable_entity->m_entity_type == ENEMY && m_entity_type == PLAYER) {
                         m_collided_enemy_left = true;
-                        //is_hit = true;
-                    //    this->deactivate();
-                    //    if (this->get_lives() == 0) {
-                    //        this->deactivate();
-                    //    }
+                        this->deactivate();
+                        continue;
+                    }
+                    if (collidable_entity->m_entity_type == ENEMY && m_entity_type == BUBBLE) {
+                        enemies_hit == true;
+                        collidable_entity->deactivate();    // enemy deactivate
+                        bubble_collision == true;           // set bubble collision to true
+                        continue;
                     }
 
                     m_position.x += x_overlap;
@@ -287,16 +305,17 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
                     // Collision!
                     m_collided_left = true;
                 }
-                std::cout << "Collision detected with entity of type: " << collidable_entity->m_entity_type << std::endl;
+                // std::cout << "Collision detected with entity of type: " << collidable_entity->m_entity_type << std::endl;
 
-                this->decrease_lives();
-                if (get_lives() <= 0) {
-                    this->deactivate();
-                }
+                //this->decrease_lives();     // TODO: DELETE
+                //if (get_lives() <= 0) {
+                //    this->deactivate();
+                //}
             }
         }
     }
 }
+
 
 void const Entity::check_player_hit(Entity* collidable_entities, int collidable_entity_count){
     m_collided_enemy_left = false;
@@ -304,7 +323,6 @@ void const Entity::check_player_hit(Entity* collidable_entities, int collidable_
     check_collision_x(collidable_entities, collidable_entity_count);
 
     if (m_collided_enemy_left || m_collided_enemy_right) { is_hit = true;}
-
 }
 
 void const Entity::check_enemy_hit(Entity* collidable_entities, int collidable_entity_count) {
@@ -313,6 +331,49 @@ void const Entity::check_enemy_hit(Entity* collidable_entities, int collidable_e
     check_collision_y(collidable_entities, collidable_entity_count);
 
     hitting_enemy = false;
+}
+
+void const Entity::check_bubble_enemy_hits(Entity* collidable_entities, int collidable_entity_count) {
+    // m_collided_bubble_enemy = false;
+    bubble_collision = false;
+    check_collision_x(collidable_entities, collidable_entity_count);
+    check_collision_y(collidable_entities, collidable_entity_count);
+}
+
+void const Entity::check_bubble_map_hits(Map* map) {
+    bubble_collision = false;
+    glm::vec3 top = glm::vec3(m_position.x, m_position.y + (m_height / 2), m_position.z);
+    glm::vec3 bottom = glm::vec3(m_position.x, m_position.y - (m_height / 2), m_position.z);
+    glm::vec3 left = glm::vec3(m_position.x - (m_width / 2), m_position.y, m_position.z);
+    glm::vec3 right = glm::vec3(m_position.x + (m_width / 2), m_position.y, m_position.z);
+
+    float penetration_x = 0;
+    float penetration_y = 0;
+
+    if (m_entity_type == BUBBLE) {
+        if (map->is_solid(top, &penetration_x, &penetration_y) && m_velocity.y > 0)
+        {
+            bubble_collision == true;           // set bubble collision to true
+            this->deactivate();
+
+        }
+        if (map->is_solid(bottom, &penetration_x, &penetration_y) && m_velocity.y < 0)
+        {
+            bubble_collision == true;           // set bubble collision to true
+            this->deactivate();
+        }
+        if (map->is_solid(left, &penetration_x, &penetration_y) && m_velocity.x < 0)
+        {
+            bubble_collision == true;           // set bubble collision to true
+            this->deactivate();
+
+        }
+        if (map->is_solid(right, &penetration_x, &penetration_y) && m_velocity.x > 0)
+        {
+            bubble_collision == true;           // set bubble collision to true
+            this->deactivate();
+        }
+    }
 }
 
 
@@ -337,18 +398,22 @@ void const Entity::check_collision_y(Map* map)
     // If the map is solid, check the top three points
     if (map->is_solid(top, &penetration_x, &penetration_y) && m_velocity.y > 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.y -= penetration_y;
         m_velocity.y = 0;
         m_collided_top = true;
+        
     }
     else if (map->is_solid(top_left, &penetration_x, &penetration_y) && m_velocity.y > 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.y -= penetration_y;
         m_velocity.y = 0;
         m_collided_top = true;
     }
     else if (map->is_solid(top_right, &penetration_x, &penetration_y) && m_velocity.y > 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.y -= penetration_y;
         m_velocity.y = 0;
         m_collided_top = true;
@@ -357,18 +422,21 @@ void const Entity::check_collision_y(Map* map)
     // And the bottom three points
     if (map->is_solid(bottom, &penetration_x, &penetration_y) && m_velocity.y < 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.y += penetration_y;
         m_velocity.y = 0;
         m_collided_bottom = true;
     }
     else if (map->is_solid(bottom_left, &penetration_x, &penetration_y) && m_velocity.y < 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.y += penetration_y;
         m_velocity.y = 0;
         m_collided_bottom = true;
     }
     else if (map->is_solid(bottom_right, &penetration_x, &penetration_y) && m_velocity.y < 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.y += penetration_y;
         m_velocity.y = 0;
         m_collided_bottom = true;
@@ -386,13 +454,18 @@ void const Entity::check_collision_x(Map* map)
     float penetration_y = 0;
 
     if (map->is_solid(left, &penetration_x, &penetration_y) && m_velocity.x < 0)
-    {
+    {        
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
+        //if (m_entity_type == PLAYER) this->deactivate();
         m_position.x += penetration_x;
+        //m_position.x = 5.0f;
         m_velocity.x = 0;
         m_collided_left = true;
+        
     }
     if (map->is_solid(right, &penetration_x, &penetration_y) && m_velocity.x > 0)
     {
+        if (m_entity_type == BUBBLE) { bubble_collision == true; this->deactivate(); }
         m_position.x -= penetration_x;
         m_velocity.x = 0;
         m_collided_right = true;
@@ -440,10 +513,10 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         }
     }
 
-    if (m_entity_type == HOOK && m_position.x <= -5.0) {
-        // idk 
+    
+    if (m_entity_type == BUBBLE && (m_collided_top || m_collided_bottom || m_collided_left || m_collided_right) == true) {
+        bubble_collision = true;
     }
-
 
     // an initial velocity
     m_velocity.x = m_movement.x * m_speed;
