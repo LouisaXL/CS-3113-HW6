@@ -101,7 +101,25 @@ void LevelC::initialise()
     // Jumping
     m_game_state.player->set_jumping_power(5.0f);
 
+    // ————— BUBBLE ————— //
 
+    GLuint bubble_texture_id = Utility::load_texture(BUBBLE_FILEPATH);
+    m_game_state.bubble = new Entity(bubble_texture_id, 5.0f, 0.3f, 0.3f, BUBBLE);
+
+    m_game_state.bubble->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
+    m_game_state.bubble->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
+    m_game_state.bubble->set_scale(glm::vec3(0.2f, 0.2f, 0.0f));
+
+    // if not using, then deactivate
+    if (m_game_state.player->get_bubble_direction() == 0) m_game_state.bubble->deactivate();
+
+    // ————— HOOK ————— //
+
+    GLuint hook_texture_id = Utility::load_texture(HOOK_FILEPATH);
+    m_game_state.hook = new Entity(hook_texture_id, 1.0f, 0.5f, 1.0f, HOOK);
+
+    m_game_state.hook->set_position(glm::vec3(3.0f, 0.0f, 0.0f));
+    m_game_state.hook->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
 
     // ————— NPC ————— //
 
@@ -119,15 +137,6 @@ void LevelC::initialise()
     m_game_state.enemies[0].set_movement(glm::vec3(0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     //m_game_state.enemies[0].set_scale(glm::vec3(2.0f, 2.0f, 0.0f));
-
-    /**
-     BGM and SFX
-     */
-    //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-
-    //m_game_state.bgm = Mix_LoadMUS("assets/dooblydoo.mp3");
-    //Mix_PlayMusic(m_game_state.bgm, -1);
-    //Mix_VolumeMusic(0.0f);
 
         // ––––– AUDIO SETUP ––––– //
    // Start Audio

@@ -184,14 +184,10 @@ void LevelA::update(float delta_time)
     }
 
     // check bubble collision
-    //m_game_state.bubble->check_bubble_enemy_hits(m_game_state.enemies, ENEMY_COUNT);
-    //m_game_state.bubble->check_bubble_map_hits(m_game_state.map);
     m_game_state.bubble->check_bubble_enemy_hits(m_game_state.enemies, ENEMY_COUNT);
     m_game_state.bubble->check_bubble_map_hits(m_game_state.map);
 
-    //if (m_game_state.bubble->get_is_hit() == true) {
-    //    m_game_state.bubble->deactivate();
-    //}
+
 
     //if (m_game_state.bubble->get_bubble_collision() == true || m_game_state.bubble->get_is_active() == false) {
     //    // hit smt
@@ -201,34 +197,22 @@ void LevelA::update(float delta_time)
     //}
 
     // spawn bubble if press
-    if (m_game_state.player->get_bubble_direction() != 0 ) { // currently have direction 
+    if (m_game_state.player->get_bubble_direction() != 0 && m_game_state.bubble->get_is_active() == false) { // currently have direction & is not colliding
         m_game_state.bubble->activate();    // activate bubble
         m_game_state.bubble->set_position(glm::vec3(m_game_state.player->get_position().x, m_game_state.player->get_position().y, 0.0f));   // start from where player is
-
+        // check and go directions
         if (m_game_state.player->get_bubble_direction() == 1) m_game_state.bubble->set_movement(glm::vec3(0.0f, 1.0f, 0.0f));           // bubble move up
         else if (m_game_state.player->get_bubble_direction() == 2) m_game_state.bubble->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));      // bubble move right
         else if (m_game_state.player->get_bubble_direction() == 3) m_game_state.bubble->set_movement(glm::vec3(0.0f, -1.0f, 0.0f));     // bubble move down
         else if (m_game_state.player->get_bubble_direction() == 4) m_game_state.bubble->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));     // bubble move left
-        
-        //if (m_game_state.bubble->get_bubble_collision() == true) {
-        //    // hit smt
-        //    m_game_state.bubble->deactivate();                  // disappear and restart
-        //    m_game_state.player->reset_bubble_direction();      // reset direction to 0
-        //    m_game_state.bubble->reset_bubble_collision();      // bubble_collision = false
-        //}
-        
 
-    }
+
+    }        
     
-    //if (m_game_state.bubble->get_is_active() == false) {
-    //    // not active on map
-    //    // m_game_state.bubble->deactivate();                  // disappear and restart
-    //    m_game_state.player->reset_bubble_direction();      // reset direction to 0
-    //    m_game_state.bubble->reset_bubble_collision();      // bubble_collision = false
-    //}
-    //if (m_game_state.bubble->get_is_active() == false) m_game_state.bubble->reset_bubble_direction();
-  
-
+    if (m_game_state.bubble->get_bubble_collision() == true) {
+        m_game_state.player->reset_bubble_direction();
+        m_game_state.bubble->reset_bubble_collision();
+    }
     
 
 
