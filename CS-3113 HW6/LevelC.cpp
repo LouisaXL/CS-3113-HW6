@@ -28,6 +28,9 @@ AUDIO_BUFF_SIZE = 4096;
 //                JUMP_SFX_FILEPATH[] = "assets/jump.mp3";
 // constexpr int  LOOP_FOREVER = -1;  // -1 means loop forever in Mix_PlayMusic; 0 means play once and loop zero times
 
+int count_down = 100;
+int curr_map = 1;
+
 unsigned int LEVEL_3_DATA[] =
 {
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -44,14 +47,46 @@ unsigned int LEVEL_3_DATA[] =
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
 };
 
+unsigned int LEVEL_3_DATA_1[] =
+{
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 3,
+    3, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+};
 
+unsigned int LEVEL_3_DATA_2[] =
+{
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3,
+    3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+};
 
 LevelC::~LevelC()
 {
     delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
-    Mix_FreeChunk(m_game_state.jump_sfx);
+    delete    m_game_state.bubble;
+    delete    m_game_state.hook;
+    Mix_FreeChunk(m_game_state.shoot_sfx);
     Mix_FreeMusic(m_game_state.bgm);
 }
 
@@ -63,7 +98,7 @@ void LevelC::initialise()
     m_game_state.next_scene_id = -1;
 
     GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
-    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_3_DATA, map_texture_id, 1.0f, 4, 1);
+    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_3_DATA_1, map_texture_id, 1.0f, 4, 1);
 
 
     // ————— PLAYER ————— //
@@ -116,9 +151,9 @@ void LevelC::initialise()
     // ————— HOOK ————— //
 
     GLuint hook_texture_id = Utility::load_texture(HOOK_FILEPATH);
-    m_game_state.hook = new Entity(hook_texture_id, 1.0f, 0.5f, 1.0f, HOOK);
+    m_game_state.hook = new Entity(hook_texture_id, 1.0f, 0.3f, 0.3f, HOOK);
 
-    m_game_state.hook->set_position(glm::vec3(3.0f, 0.0f, 0.0f));
+    m_game_state.hook->set_position(glm::vec3(2.0f, -1.0f, 0.0f));
     m_game_state.hook->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
 
     // ————— NPC ————— //
@@ -133,7 +168,7 @@ void LevelC::initialise()
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(1.0f, -2.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(3.0f, -2.0f, 0.0f));
     m_game_state.enemies[0].set_movement(glm::vec3(0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     //m_game_state.enemies[0].set_scale(glm::vec3(2.0f, 2.0f, 0.0f));
@@ -159,8 +194,9 @@ void LevelC::initialise()
     // MIX_MAX_VOLUME is a pre-defined constant
     Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
 
-    m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
-
+    m_game_state.shoot_sfx = Mix_LoadWAV("assets/shoot.wav");
+    m_game_state.lvUP_sfx = Mix_LoadWAV("assets/next_level.wav");
+    m_game_state.dies_sfx = Mix_LoadWAV("assets/bonk.wav");
 
 }
 
@@ -175,22 +211,71 @@ void LevelC::update(float delta_time)
         m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, NULL, m_game_state.map);
     }
 
-    // TODO: check the order (done?)
+    m_game_state.bubble->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+    m_game_state.hook->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+
+
     m_game_state.player->check_enemy_hit(m_game_state.enemies, ENEMY_COUNT);
     m_game_state.player->check_player_hit(m_game_state.enemies, ENEMY_COUNT);
 
-    // TODO: CHANGE IS_HIT TO JUST COLLISION CHECKS
+
     if (m_game_state.player->get_is_hit() == true) {
         m_game_state.player->deactivate();
     }
 
+    // check bubble collision
+    //m_game_state.bubble->check_bubble_enemy_hits(m_game_state.enemies, ENEMY_COUNT);
+    //m_game_state.bubble->check_bubble_map_hits(m_game_state.map);
 
 
-    // CHANGE TO NEXT SCENE
-    //if (m_game_state.enemies[0].get_is_active() == false && ENEMY_COUNT != 0) {
-    //    // m_game_state.next_scene_id = 2;
-    //    m_game_state.player->set_position(glm::vec3(5.0f, 2.0f, 0.0f)); // reset position
+
+    //if (m_game_state.bubble->get_bubble_collision() == true || m_game_state.bubble->get_is_active() == false) {
+    //    // hit smt
+    //    m_game_state.bubble->deactivate();                  // disappear and restart
+    //    m_game_state.player->reset_bubble_direction();      // reset direction to 0
+    //    m_game_state.bubble->reset_bubble_collision();      // bubble_collision = false
     //}
+
+    // spawn bubble if press
+    if (m_game_state.player->get_bubble_direction() != 0 && m_game_state.bubble->get_is_active() == false) { // currently have direction & is not colliding
+        m_game_state.bubble->activate();    // activate bubble
+        m_game_state.bubble->set_position(glm::vec3(m_game_state.player->get_position().x, m_game_state.player->get_position().y, 0.0f));   // start from where player is
+        // check and go directions
+        if (m_game_state.player->get_bubble_direction() == 1) m_game_state.bubble->set_movement(glm::vec3(0.0f, 1.0f, 0.0f));           // bubble move up
+        else if (m_game_state.player->get_bubble_direction() == 2) m_game_state.bubble->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));      // bubble move right
+        else if (m_game_state.player->get_bubble_direction() == 3) m_game_state.bubble->set_movement(glm::vec3(0.0f, -1.0f, 0.0f));     // bubble move down
+        else if (m_game_state.player->get_bubble_direction() == 4) m_game_state.bubble->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));     // bubble move left
+
+
+    }
+
+    if (m_game_state.bubble->get_bubble_collision() == true) {
+        m_game_state.player->reset_bubble_direction();
+        m_game_state.bubble->reset_bubble_collision();
+    }
+
+    if (m_game_state.hook->get_position().x <= 1.0f || m_game_state.hook->get_position().x >= 10.0f) {
+        m_game_state.hook->set_movement(-m_game_state.hook->get_movement());
+    }
+
+
+    if (count_down != 0) {
+        count_down--;
+    }
+    else {     // count_down == 0
+        if (curr_map == 1) {
+            GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
+            m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_3_DATA_2, map_texture_id, 1.0f, 4, 1);
+            curr_map = 2;
+        }
+        else {  // curr_map = 2
+            GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
+            m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_3_DATA_1, map_texture_id, 1.0f, 4, 1);
+            curr_map = 1;
+        }
+        count_down = 100;
+    }
+
 }
 
 
@@ -199,17 +284,23 @@ void LevelC::render(ShaderProgram* g_shader_program)
     GLuint g_font_texture_id = Utility::load_texture(WORD_FILEPATH);
     m_game_state.map->render(g_shader_program);
     m_game_state.player->render(g_shader_program);
+    m_game_state.hook->render(g_shader_program);
     for (int i = 0; i < 1; i++)
         m_game_state.enemies[i].render(g_shader_program);
 
+    if (m_game_state.bubble->get_is_active()) {
+        m_game_state.bubble->render(g_shader_program);
+    }
+
     if (m_game_state.player->get_is_active() == false) {
         Utility::draw_text(g_shader_program, g_font_texture_id, "WASTED", 0.5f, 0.05f,
-            glm::vec3(9.0f, -1.0f, 0.0f));
+            m_game_state.player->get_position());
     }
     // TODO: ADD THE BELOW TO THE LAST LEVEL
     // 
-    if (m_game_state.enemies->get_is_active() == false && ENEMY_COUNT != 0) {
-        Utility::draw_text(g_shader_program, g_font_texture_id, "WIN", 0.5f, 0.05f,
+    if ((m_game_state.enemies->get_is_active() == false && ENEMY_COUNT != 0) || m_game_state.player->check_collision(m_game_state.hook)) {
+        Utility::draw_text(g_shader_program, g_font_texture_id, "WIN?", 0.5f, 0.05f,
             glm::vec3(5.0f, 1.0f, 0.0f));
+        //Mix_PlayChannel(-1, m_game_state.dies_sfx, 0);
     }
 }

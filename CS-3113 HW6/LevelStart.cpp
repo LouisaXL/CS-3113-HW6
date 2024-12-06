@@ -28,7 +28,7 @@ LevelStart::~LevelStart()
     delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
-    Mix_FreeChunk(m_game_state.jump_sfx);
+    Mix_FreeChunk(m_game_state.shoot_sfx);
     Mix_FreeMusic(m_game_state.bgm);
 }
 
@@ -77,7 +77,7 @@ void LevelStart::initialise() {
     // Jumping
     m_game_state.player->set_jumping_power(5.0f);
 
-    m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
+    m_game_state.shoot_sfx = Mix_LoadWAV("assets/bounce.wav");
 }
 
 

@@ -96,7 +96,6 @@ constexpr GLint LEVEL_OF_DETAIL = 0;
 constexpr GLint TEXTURE_BORDER = 0;
 
 
-
 //// BGM
 constexpr int CD_QUAL_FREQ = 44100,  // CD quality
 AUDIO_CHAN_AMT = 2,      // Stereo
@@ -109,6 +108,7 @@ AUDIO_BUFF_SIZE = 4096;
 //MILS_IN_SEC = 1000,
 //ALL_SFX_CHN = -1;
 
+int sound_times_played = 0;
 
 // ––––– GLOBAL VARIABLES ––––– //
 // ————— GLOBAL VARIABLES ————— //
@@ -268,22 +268,22 @@ void process_input()
 
             case SDLK_w:
                 g_current_scene->get_state().player->shoot_up();
-                Mix_PlayChannel(-1, g_current_scene->get_state().jump_sfx, 0);
+                Mix_PlayChannel(-1, g_current_scene->get_state().shoot_sfx, 0);
                 break;
 
             case SDLK_s:
                 g_current_scene->get_state().player->shoot_down();
-                Mix_PlayChannel(-1, g_current_scene->get_state().jump_sfx, 0);
+                Mix_PlayChannel(-1, g_current_scene->get_state().shoot_sfx, 0);
                 break;
 
             case SDLK_a:
                 g_current_scene->get_state().player->shoot_left();
-                Mix_PlayChannel(-1, g_current_scene->get_state().jump_sfx, 0);
+                Mix_PlayChannel(-1, g_current_scene->get_state().shoot_sfx, 0);
                 break;
 
             case SDLK_d:
                 g_current_scene->get_state().player->shoot_right();
-                Mix_PlayChannel(-1, g_current_scene->get_state().jump_sfx, 0);
+                Mix_PlayChannel(-1, g_current_scene->get_state().shoot_sfx, 0);
                 break;
 
             //case SDLK_m:
@@ -430,8 +430,11 @@ int main(int argc, char* argv[])
         update();
         if (g_current_scene->get_state().next_scene_id >= 0) {
             switch_to_scene(g_levels[g_current_scene->get_state().next_scene_id]);
-        
-
+            Mix_PlayChannel(-1, g_current_scene->get_state().lvUP_sfx, 0);
+        }
+        if (g_current_scene->get_state().player->get_is_active() == false && sound_times_played == 0) {
+            Mix_PlayChannel(-1, g_current_scene->get_state().dies_sfx, 0);
+            sound_times_played++;
         }
         render();
     }
